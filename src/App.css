@@ -10,7 +10,7 @@ html, body {
   height: 100%;
 }
 
-.app-container {
+#main-game {
   display: flex;
   flex-direction: column;
   align-items: center;
