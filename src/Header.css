@@ -1,0 +1,12 @@
+.header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 30px;
+    font-weight: bold;
+    width: 100vw;
+    background-color: #384848;
+    padding-left: 10px;
+    box-sizing: border-box;
+    box-shadow: inset;
+}
