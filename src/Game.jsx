@@ -131,6 +131,15 @@ const Game = () => {
     const handleGuess = () => {
         const guessInput = document.getElementById('guess');
         const guessedProvince = guessInput.value.trim();
+        
+        const province = provinces.find(p => 
+          p.name === guessedProvince
+        );
+
+        if(province == null) {
+            alert("Invalid province");
+            return;
+        }
 
         if(guessedProvinces.includes(guessedProvince)) {
             alert("Already guessed");
@@ -141,6 +150,8 @@ const Game = () => {
             alert("Guess should not include start or end");
             return;
         }
+
+        
 
         setGuessedProvinces(prev => [...prev, guessedProvince]);
         gameMapRef.current.highlightProvince(guessedProvince);
@@ -168,49 +179,72 @@ const Game = () => {
     };
 
     return (
-        <div id="main-game" className="shadow-lg ax-w-xl mx-auto">
-            <div>
-            {
-                challenge ? 
-                <h3>Hôm nay tôi muốn đi từ <strong style={{color: '#28a745'}}>{challenge.startName}
-                    </strong> đến <strong style={{color: '#dc3545'}}>{challenge.endName}</strong>
-                </h3>
-                : null
-            }
-            </div >
+        <div id="main-game" className="box-border flex w-full pt-15 h-[100vh] content">
+            <div className="min-w-1xl max-w-[55vw] h-full flex content-center p-4 grow">
             {
                 loading ? null : <>
                     <GameMap 
                         ref={gameMapRef}
                         provinces = {provinces}
                         markMapReady={markMapReady}
+                        className="w-full"
                     />
                 </>
                 
             }
-            <div>
-                <input 
-                id="guess" 
-                className="w-full bg-slate-800 
-                        border border-slate-700 
-                        text-white placeholder-slate-400 px-4 py-3 rounded-lg 
-                        focus:outline-none focus:ring-2 focus:ring-teal-400 
-                        focus:border-transparent transition-all"/>
-                <button onClick={handleGuess}>Guess</button>
             </div>
             
-            <div>
-                <h3>Guesses:</h3>
-                <ol>
-                {
-                    guessedProvinces.map(province => 
-                        <li key={getProvinceIdByName(province)}>
-                            {province}</li>
-                    )
-                }
-                </ol>
-                
+            <div className="max-w-3xl mr-5 mt-30">
+                <div className="w-full max-w-1xl mx-auto px-4 my-6 flex flex-col gap-2
+                rounded-lg p-4">
+            {
+                challenge ? 
+                <h3>Kết nối <strong style={{color: '#61bd6c'}}>{challenge.startName}
+                    </strong> đến <strong style={{color: '#e05c56'}}>{challenge.endName}</strong>
+                </h3>
+                : null
+            }
             </div>
+            
+            <div className="flex flex-col w-full py-6">
+                <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-2 flex flex-col gap-2
+                 rounded-lg p-4">
+                    <div className="block text-sm font-medium">
+                        Nhập tên tỉnh
+                    </div>
+                    <input 
+                    id="guess" 
+                    className="px-3 py-2 
+                        border border-[#3b4043] rounded-md 
+                        focus:outline-none focus:ring-2 
+                        text-sm"
+                    />
+                    <button 
+                        className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
+                        onClick={handleGuess}>Đoán</button>
+                </div>
+            
+                <div className="w-full max-w-full mx-auto px-4 mt-2 flex flex-col rounded-lg">
+                    <label className="block text-sm font-medium mb-2">
+                        Các tỉnh đã đoán:
+                    </label>
+                    <ol className="flex flex-wrap gap-1">
+                    {
+                        guessedProvinces.map((province, index) => 
+                            <li key={getProvinceIdByName(province)}
+                                className="bg-[#3b4043] px-3 py-2 rounded-full text-sm font-medium"
+                            >
+                                {index+1}. {province}</li>
+                        )
+                    }
+                    </ol>
+                    
+                </div>
+            </div>
+
+            </div>
+            
+            
 
         </div>
     )

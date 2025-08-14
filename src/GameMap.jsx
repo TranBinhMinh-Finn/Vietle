@@ -8,10 +8,10 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
     const mapRef = useRef(null);
     const provinceState = useRef();
     const highlightColors = {
-        start: '#28a745',    
-        end: '#dc3545',      
+        start: '#61bd6c',    
+        end: '#e05c56',      
         path: '#007bff',     
-        default: '#ffe8d6'   
+        default: '#e7e7e7'   
     };
 
     useImperativeHandle(ref, () => ({
@@ -31,11 +31,12 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
             if (!mapRef.current) {
                 mapRef.current = new maplibregl.Map({
                     container: mapContainer.current,
-                    style: './src/assets/map-style.json',
-                    center: [108, 15],
-                    zoom: 4,
+                    style: './src/assets/style.json',
+                    center: [106, 15],
+                    zoom: 5.2,
                     });
-                
+                // mapRef.current.dragPan.disable();
+                // mapRef.current.scrollZoom.disable();
                 mapRef.current.on('load', () => addProvinceLayer());
                 mapRef.current.on('click', () => addProvinceAnnotations());
                 mapRef.current.on('load', () => markMapReady());
@@ -61,7 +62,7 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
                     layout: {},
                     paint: {
                     'fill-color': highlightColors.default,
-                    'fill-outline-color': '#6b705c',
+                    'fill-outline-color': '#3b4043',
                     'fill-opacity': 1,
                     },
                 });
@@ -168,6 +169,7 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
             <div 
             id="map-container" 
             ref={mapContainer} 
+            className="h-5xl w-full"
             />
         </>
     );
