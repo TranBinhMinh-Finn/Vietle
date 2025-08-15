@@ -7,6 +7,10 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
     const mapContainer = useRef(null);
     const mapRef = useRef(null);
     const provinceState = useRef();
+    const [containerWidth, setContainerWidth] = useState(800);
+    const [containerHeight, setContainerHeight] = useState(null); 
+    const bbox = [[102.1421, 6.953306], [116.9473, 23.3939]];
+
     const highlightColors = {
         start: '#61bd6c',    
         end: '#e05c56',      
@@ -26,20 +30,94 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
         },
     }));
     
+    // responsive logic
+    // Calculate the aspect ratio of the bounding box
+    const getBboxAspectRatio = () => {
+        const lngDiff = bbox[1][0] - bbox[0][0];
+        const latDiff = bbox[1][1] - bbox[0][1];
+        // Rough approximation of aspect ratio (more accurate would need projection math)
+        return lngDiff / latDiff;
+    };
+    
+    const bboxAspectRatio = getBboxAspectRatio();
+
+    const fitToBbox = () => {
+    if (mapRef.current) {
+      mapRef.current.fitBounds(bbox, {
+        padding: 20,
+        animate: false,
+        duration: 500
+      });
+    }
+    };
+    
+    // Calculate height based on width and bbox aspect ratio
+    const calculateDimensions = (width) => {
+        const numericWidth = typeof width === 'string' && width.includes('%') 
+        ? mapContainer.current?.parentElement?.offsetWidth || 800
+        : parseInt(width);
+        
+        const height = Math.round(numericWidth / bboxAspectRatio);
+        return { width: numericWidth, height };
+    };
+    
+    useEffect(() => {
+        const dimensions = calculateDimensions(containerWidth);
+        setContainerHeight(dimensions.height);
+    }, [containerWidth, bboxAspectRatio]);
+
+    // Handle container dimension changes
+    useEffect(() => {
+        if (mapRef.current) {
+            setTimeout(() => {
+            mapRef.current.resize();
+        }, 50);
+      }
+    }, [containerWidth, containerHeight]);
+
+    // Set up ResizeObserver for the map container
+    useEffect(() => {
+        if (!mapContainer.current || !window.ResizeObserver) return;
+        
+        const resizeObserver = new ResizeObserver((entries) => {
+          for (let entry of entries) {
+            if (entry.target === mapRef.current) {
+              setTimeout(() => {
+                mapRef.current.resize();
+              }, 50);
+            }
+          }
+        });
+
+        resizeObserver.observe(mapContainer.current);
+
+        return () => {
+          resizeObserver.disconnect();
+        };
+    }, []);
+
     useEffect(() => {
         const initializeMap = () => {
             if (!mapRef.current) {
                 mapRef.current = new maplibregl.Map({
                     container: mapContainer.current,
                     style: './src/assets/style.json',
-                    center: [106, 15],
+                    // center: [106, 15],
                     zoom: 5.2,
+                    attributionControl: false,
                     });
-                // mapRef.current.dragPan.disable();
-                // mapRef.current.scrollZoom.disable();
                 mapRef.current.on('load', () => addProvinceLayer());
                 mapRef.current.on('click', () => addProvinceAnnotations());
                 mapRef.current.on('load', () => markMapReady());
+
+                mapRef.current.dragPan.disable();
+                mapRef.current.scrollZoom.disable();
+                mapRef.current.on('load', () => fitToBbox());
+                mapRef.current.on('resize', () => {
+                    setTimeout(() => {
+                        fitToBbox();
+                    }, 100);
+                });
             }
         };
 
@@ -81,7 +159,6 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
 
         const addProvinceAnnotations = () => {
             const map = mapRef.current;
-            
             
             provinces.forEach((province) => {
                 const layerId = `province-layer-${province.name}`;
@@ -169,7 +246,11 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
             <div 
             id="map-container" 
             ref={mapContainer} 
-            className="h-5xl w-full"
+            className="w-full"
+            style={{ 
+                width: `${containerWidth}px`, 
+                height: `${containerHeight}px` 
+            }} 
             />
         </>
     );

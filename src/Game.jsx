@@ -180,15 +180,15 @@ const Game = () => {
     };
 
     return (
-        <div id="main-game" className="box-border flex w-full pt-15 h-[100vh] content">
-            <div className="min-w-1xl max-w-[55vw] h-full flex content-center p-4 grow">
+        <div id="main-game" className="box-border flex w-full h-screen pt-15 grow content-center">
+            <div className="min-w-1xl max-w-[55vw] flex content-center justify-end p-4 grow">
             {
                 loading ? null : <>
                     <GameMap 
                         ref={gameMapRef}
                         provinces = {provinces}
                         markMapReady={markMapReady}
-                        className="w-full"
+                        
                     />
                 </>
                 
@@ -198,52 +198,50 @@ const Game = () => {
             <div className="max-w-3xl mr-5 mt-30">
                 <div className="w-full max-w-1xl mx-auto px-4 my-6 flex flex-col gap-2
                 rounded-lg p-4">
-            {
-                challenge ? 
-                <h3>Kết nối <strong style={{color: '#61bd6c'}}>{challenge.startName}
-                    </strong> đến <strong style={{color: '#e05c56'}}>{challenge.endName}</strong>
-                </h3>
-                : null
-            }
-            </div>
+                {
+                    challenge ? 
+                    <h3>Kết nối <strong style={{color: '#61bd6c'}}>{challenge.startName}
+                        </strong> đến <strong style={{color: '#e05c56'}}>{challenge.endName}</strong>
+                    </h3>
+                    : null
+                }   
+                </div>
             
-            <div className="flex flex-col w-full py-6">
-                <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-2 flex flex-col gap-2
-                 rounded-lg p-4">
-                    <div className="block text-sm font-medium">
-                        Nhập tên tỉnh
+                <div className="flex flex-col w-full py-6">
+                    <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-2 flex flex-col gap-2
+                    rounded-lg p-4">
+                        <div className="block text-sm font-medium">
+                            Nhập tên tỉnh
+                        </div>
+                        <AutoSuggestInput
+                            provinceNames={provinces.map(province => province.name)}
+                            handleSubmit={handleGuess}
+                        />
+                        <button 
+                            className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
+                            onClick={handleGuess}>Đoán</button>
                     </div>
-                    <AutoSuggestInput
-                        provinceNames={provinces.map(province => province.name)}
-                        handleSubmit={handleGuess}
-                    />
-                    <button 
-                        className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
-                        onClick={handleGuess}>Đoán</button>
-                </div>
             
-                <div className="w-full max-w-full mx-auto px-4 mt-2 flex flex-col rounded-lg">
-                    <label className="block text-sm font-medium mb-2">
-                        Các tỉnh đã đoán:
-                    </label>
-                    <ol className="flex flex-wrap gap-1">
-                    {
-                        guessedProvinces.map((province, index) => 
-                            <li key={getProvinceIdByName(province)}
-                                className="bg-[#3b4043] px-3 py-2 rounded-full text-sm font-medium"
-                            >
-                                {index+1}. {province}</li>
-                        )
-                    }
-                    </ol>
-                    
+                    <div className="w-full max-w-full mx-auto px-4 mt-2 flex flex-col rounded-lg">
+                        <label className="block text-sm font-medium mb-2">
+                            Các tỉnh đã đoán:
+                        </label>
+                        <ol className="flex flex-wrap gap-1">
+                        {
+                            guessedProvinces.map((province, index) => 
+                                <li key={getProvinceIdByName(province)}
+                                    className="bg-[#3b4043] px-3 py-2 rounded-full text-sm font-medium"
+                                >
+                                    {index+1}. {province}</li>
+                            )
+                        }
+                        </ol>
+                        
+                    </div>
                 </div>
-            </div>
 
             </div>
             
-            
-
         </div>
     )
 }
