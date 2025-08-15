@@ -4,6 +4,7 @@ import { loadProvinceData } from "./LoadData";
 import adjacencyData from './assets/gis/merged/merged_adjacency.json';
 import {getProvinceNameById, getProvinceIdByName} from "./utils";
 import './App.css';
+import AutoSuggestInput from "./AutoSuggestInput";
 
 const Game = () => {
     const [provinces, setProvinces] = useState([]);
@@ -131,7 +132,7 @@ const Game = () => {
     const handleGuess = () => {
         const guessInput = document.getElementById('guess');
         const guessedProvince = guessInput.value.trim();
-        
+
         const province = provinces.find(p => 
           p.name === guessedProvince
         );
@@ -212,12 +213,9 @@ const Game = () => {
                     <div className="block text-sm font-medium">
                         Nhập tên tỉnh
                     </div>
-                    <input 
-                    id="guess" 
-                    className="px-3 py-2 
-                        border border-[#3b4043] rounded-md 
-                        focus:outline-none focus:ring-2 
-                        text-sm"
+                    <AutoSuggestInput
+                        provinceNames={provinces.map(province => province.name)}
+                        handleSubmit={handleGuess}
                     />
                     <button 
                         className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
