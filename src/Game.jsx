@@ -180,8 +180,8 @@ const Game = () => {
     };
 
     return (
-        <div id="main-game" className="box-border flex w-full h-screen pt-15 grow content-center">
-            <div className="min-w-1xl max-w-[55vw] flex content-center justify-end p-4 grow">
+        <div id="main-game" className="box-border flex flex-col md:flex-row w-full h-screen pt-10 grow content-center">
+            <div className="w-full flex content-center md:max-w-[55vw] md:justify-end p-4 md:pl-30 md:grow">
             {
                 loading ? null : <>
                     <GameMap 
@@ -195,20 +195,19 @@ const Game = () => {
             }
             </div>
             
-            <div className="max-w-3xl mr-5 mt-30">
-                <div className="w-full max-w-1xl mx-auto px-4 my-6 flex flex-col gap-2
-                rounded-lg p-4">
+            <div className="md:w-[50vw] md:mr-5 md:mt-30 md:grow">
+                <div className="w-full md:max-w-2xl md:mr-auto md:my-6 flex flex-col gap-2 p-4">
                 {
                     challenge ? 
-                    <h3>Kết nối <strong style={{color: '#61bd6c'}}>{challenge.startName}
+                    <h3 className="text-left">Kết nối <strong style={{color: '#61bd6c'}}>{challenge.startName}
                         </strong> đến <strong style={{color: '#e05c56'}}>{challenge.endName}</strong>
                     </h3>
                     : null
                 }   
                 </div>
             
-                <div className="flex flex-col w-full py-6">
-                    <div className="w-full max-w-7xl mx-auto px-4 mt-8 mb-2 flex flex-col gap-2
+                <div className="flex flex-col w-full md:py-6 md:max-w-lg">
+                    <div className="w-full max-w-7xl mx-auto px-4 md:mt-8 mb-2 flex flex-col gap-2
                     rounded-lg p-4">
                         <div className="block text-sm font-medium">
                             Nhập tên tỉnh

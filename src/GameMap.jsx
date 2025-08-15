@@ -30,71 +30,84 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
         },
     }));
     
-    // responsive logic
-    // Calculate the aspect ratio of the bounding box
     const getBboxAspectRatio = () => {
         const lngDiff = bbox[1][0] - bbox[0][0];
         const latDiff = bbox[1][1] - bbox[0][1];
-        // Rough approximation of aspect ratio (more accurate would need projection math)
+        
         return lngDiff / latDiff;
     };
     
     const bboxAspectRatio = getBboxAspectRatio();
 
     const fitToBbox = () => {
-    if (mapRef.current) {
-      mapRef.current.fitBounds(bbox, {
-        padding: 20,
-        animate: false,
-        duration: 500
-      });
-    }
+        if (mapRef.current) {
+            mapRef.current.fitBounds(bbox, {
+                animate: false,
+                duration: 100
+            });
+        }
     };
     
-    // Calculate height based on width and bbox aspect ratio
     const calculateDimensions = (width) => {
-        const numericWidth = typeof width === 'string' && width.includes('%') 
-        ? mapContainer.current?.parentElement?.offsetWidth || 800
-        : parseInt(width);
-        
+        const numericWidth = parseInt(width) || 800;
         const height = Math.round(numericWidth / bboxAspectRatio);
         return { width: numericWidth, height };
     };
+
+    const updateContainerDimensions = () => {
+        if (mapContainer.current && mapContainer.current.parentElement) {
+            const parentWidth = mapContainer.current.parentElement.offsetWidth;
+            
+            if (Math.abs(parentWidth - containerWidth) > 10) {
+                const dimensions = calculateDimensions(parentWidth);
+                setContainerWidth(dimensions.width);
+                setContainerHeight(dimensions.height);
+            }
+        }
+    };
     
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            updateContainerDimensions();
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     useEffect(() => {
         const dimensions = calculateDimensions(containerWidth);
         setContainerHeight(dimensions.height);
     }, [containerWidth, bboxAspectRatio]);
 
-    // Handle container dimension changes
-    useEffect(() => {
-        if (mapRef.current) {
-            setTimeout(() => {
-            mapRef.current.resize();
-        }, 50);
-      }
-    }, [containerWidth, containerHeight]);
 
-    // Set up ResizeObserver for the map container
     useEffect(() => {
         if (!mapContainer.current || !window.ResizeObserver) return;
         
         const resizeObserver = new ResizeObserver((entries) => {
-          for (let entry of entries) {
-            if (entry.target === mapRef.current) {
-              setTimeout(() => {
-                mapRef.current.resize();
-              }, 50);
+            for (let entry of entries) {
+                const newWidth = entry.contentRect.width;
+                if (newWidth > 0 && newWidth !== containerWidth) {
+                    const dimensions = calculateDimensions(newWidth);
+                    setContainerWidth(dimensions.width);
+                    setContainerHeight(dimensions.height);
+                }
             }
-          }
         });
 
+        const handleWindowResize = () => {
+            setTimeout(() => {
+                updateContainerDimensions();
+            }, 100);
+        };
+
         resizeObserver.observe(mapContainer.current);
+        window.addEventListener('resize', handleWindowResize);
 
         return () => {
-          resizeObserver.disconnect();
+            resizeObserver.disconnect();
+            window.removeEventListener('resize', handleWindowResize);
         };
-    }, []);
+    }, [bboxAspectRatio, containerWidth]);
 
     useEffect(() => {
         const initializeMap = () => {
@@ -102,7 +115,6 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
                 mapRef.current = new maplibregl.Map({
                     container: mapContainer.current,
                     style: './src/assets/style.json',
-                    // center: [106, 15],
                     zoom: 5.2,
                     attributionControl: false,
                     });
@@ -246,7 +258,7 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
             <div 
             id="map-container" 
             ref={mapContainer} 
-            className="w-full"
+            className="w-full max-w-[lg]"
             style={{ 
                 width: `${containerWidth}px`, 
                 height: `${containerHeight}px` 
