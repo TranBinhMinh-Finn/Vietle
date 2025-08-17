@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import GameMap from "./GameMap";
-import { loadProvinceData } from "./LoadData";
 import adjacencyData from './assets/gis/merged/merged_adjacency.json';
-import {getProvinceNameById, getProvinceIdByName} from "./utils";
-import './App.css';
-import AutoSuggestInput from "./AutoSuggestInput";
-import { useToast } from "./Toast";
+import {loadProvinceData, getProvinceNameById, getProvinceIdByName} from "./utils";
+import AutoSuggestInput from "./components/AutoSuggestInput";
+import { useToast } from "./components/Toast";
 
 const Game = () => {
     const toast = useToast();

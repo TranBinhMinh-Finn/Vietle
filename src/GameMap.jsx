@@ -1,6 +1,5 @@
 import { useEffect, useRef, useImperativeHandle, useState} from "react";
 import maplibregl from 'maplibre-gl';
-import './App.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const GameMap = ({provinces = [], markMapReady, ref}) => {
