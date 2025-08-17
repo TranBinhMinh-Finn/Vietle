@@ -1,14 +1,18 @@
 import Game from "./Game"
 import './App.css';
+import { ToastProvider } from "./Toast";
 
 const App = () => {
 
     return (
-      <div 
-        className="box-border px-[min(50px, 5%)] bg-[#181a1b]
+      <ToastProvider>
+        <div 
+        className="box-border bg-[#181a1b]
                   max-w-full h-screen flex flex-col">
         <Game/>
-      </div>
+        </div>
+      </ToastProvider>
+      
     );
 }
 

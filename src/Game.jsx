@@ -5,8 +5,10 @@ import adjacencyData from './assets/gis/merged/merged_adjacency.json';
 import {getProvinceNameById, getProvinceIdByName} from "./utils";
 import './App.css';
 import AutoSuggestInput from "./AutoSuggestInput";
+import { useToast } from "./Toast";
 
 const Game = () => {
+    const toast = useToast();
     const [provinces, setProvinces] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [challenge, setChallenge] = useState(null);
@@ -138,17 +140,17 @@ const Game = () => {
         );
 
         if(province == null) {
-            alert("Invalid province");
+            toast("Tên không hợp lệ");
             return;
         }
 
         if(guessedProvinces.includes(guessedProvince)) {
-            alert("Already guessed");
+            toast("Tên đã có trong danh sách");
             return;
         }
 
         if(guessedProvince == challenge.startName || guessedProvince == challenge.endName) {
-            alert("Guess should not include start or end");
+            toast("Không cần đoán điểm bắt đầu và kết thúc");
             return;
         }
 
@@ -170,18 +172,18 @@ const Game = () => {
         }   
 
         if(findSet(challenge.endId) == challenge.startId) {
-            alert("You won!")
+            toast("You won!")
             console.log("Player won");
         }
 
         if(guessedProvinces.length > 20) {
-            alert("You lose...")
+            toast("You lose...")
         }
     };
 
     return (
-        <div id="main-game" className="box-border flex flex-col md:flex-row w-full h-screen pt-10 grow content-center">
-            <div className="w-full flex content-center md:max-w-[55vw] md:justify-end p-4 md:pl-30 md:grow">
+        <div id="main-game" className="box-border flex flex-col md:flex-row w-full h-screen pt-10 content-center">
+            <div className="w-full flex content-center md:max-w-[55vw] md:justify-center pt-10 p-4 md:pl-30 md:grow">
             {
                 loading ? null : <>
                     <GameMap 
