@@ -4,7 +4,6 @@ import { ToastProvider } from "./components/Toast";
 import Header from "./components/Header";
 import { useState } from "react";
 import HelpModal from "./components/HelpModal";
-import GameEndModal from "./components/GameResultModal";
 import GameResultModal from "./components/GameResultModal";
 
 const App = () => {

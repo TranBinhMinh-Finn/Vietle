@@ -62,13 +62,15 @@ const Game = ({showResult}) => {
         const [endId, pathInId] = getRandomEndProvinceAndPath(startId);
         
         const optimalPath = pathInId.map((provinceId) => getProvinceNameById(provinceId));
+        const guessLimit = Math.max(Math.round((optimalPath.length - 2) * 1.3), optimalPath.length + 1);
 
         const challenge = {
             startId: startId,
             endId: endId,
             startName: getProvinceNameById(startId),
             endName: getProvinceNameById(endId),
-            optimalPath: optimalPath
+            optimalPath: optimalPath,
+            guessLimit: guessLimit
         }
 
         return challenge;
@@ -182,8 +184,6 @@ const Game = ({showResult}) => {
         }   
 
         if(findSet(challenge.endId) == challenge.startId) {
-            toast("You won!")
-            
             const result = {
                 playerWon: true,
                 guessesCount: guessedProvinces.length 
@@ -192,9 +192,7 @@ const Game = ({showResult}) => {
             showResult(challenge, result);
         }
 
-        if(guessedProvinces.length + 1 > 2) {
-            toast("You lose...")
-
+        if(guessedProvinces.length + 1 > guessLimit) {
             const result = {
                 playerWon: false,
             }
@@ -242,7 +240,7 @@ const Game = ({showResult}) => {
                         />
                         <button 
                             className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
-                            onClick={handleGuess}>Đoán</button>
+                            onClick={handleGuess}>Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}</button>
                     </div>
             
                     <div className="w-full max-w-full mx-auto px-4 mt-2 flex flex-col rounded-lg">
