@@ -50,7 +50,7 @@ export const ToastProvider = ({ children }) => {
           </div>
         ))}
       </div>
-      <style jsx>{`
+      <style jsx="true">{`
         @keyframes slide-in {
           from {
             transform: translateY(-100%);
