@@ -5,7 +5,7 @@ import {loadProvinceData, getProvinceNameById, getProvinceIdByName} from "./util
 import AutoSuggestInput from "./components/AutoSuggestInput";
 import { useToast } from "./components/Toast";
 
-const Game = () => {
+const Game = ({showResult}) => {
     const toast = useToast();
     const [provinces, setProvinces] = useState([]);
     const [loading, setIsLoading] = useState(true);
@@ -18,16 +18,16 @@ const Game = () => {
     let rank = useRef({})
     const maxRank = useRef(0);
 
-    const getRandomEndProvince = (startId, min_distance = 3) => {
-        const queue = [[startId]];
+    const getRandomEndProvinceAndPath = (startId, min_distance = 3) => {
+        let queue = [startId];
         const visited = new Set([startId]);
+        const traceBack = {};
         const distance = {};
         const potentialEndIds = [];
         
         distance[startId] = 0;
         while (queue.length > 0) {
-            const path = queue.shift();
-            const currentId = path[path.length - 1];
+            const currentId = queue.shift();
             
             const neighbors = adjacencyData[currentId] || [];
             
@@ -35,7 +35,8 @@ const Game = () => {
                 if (!visited.has(neighborId)) {
                     visited.add(neighborId);
                     distance[neighborId] = distance[currentId] + 1;
-                    queue.push([...path, neighborId]);
+                    queue.push(neighborId);
+                    traceBack[neighborId] = currentId;
                     if (distance[neighborId] >= min_distance) {
                         potentialEndIds.push(neighborId);
                     }
@@ -43,20 +44,31 @@ const Game = () => {
             }
         }
 
-        return potentialEndIds[Math.floor(Math.random() * potentialEndIds.length)];
+        const endId = potentialEndIds[Math.floor(Math.random() * potentialEndIds.length)];
+
+        let path = [endId];
+        let currentId = endId;
+        while(currentId != startId) {
+            currentId = traceBack[currentId];
+            path = [currentId, ...path];
+        }
+        return [endId, path];
     }
 
     const generateNewChallenge = () => {
         const provinceIds = Object.keys(adjacencyData);
 
-        const startProvince = provinceIds[Math.floor(Math.random() * provinceIds.length)];
-        const endProvince = getRandomEndProvince(startProvince);
+        const startId = provinceIds[Math.floor(Math.random() * provinceIds.length)];
+        const [endId, pathInId] = getRandomEndProvinceAndPath(startId);
         
+        const optimalPath = pathInId.map((provinceId) => getProvinceNameById(provinceId));
+
         const challenge = {
-            startId: startProvince,
-            endId: endProvince,
-            startName: getProvinceNameById(startProvince),
-            endName: getProvinceNameById(endProvince),
+            startId: startId,
+            endId: endId,
+            startName: getProvinceNameById(startId),
+            endName: getProvinceNameById(endId),
+            optimalPath: optimalPath
         }
 
         return challenge;
@@ -171,11 +183,23 @@ const Game = () => {
 
         if(findSet(challenge.endId) == challenge.startId) {
             toast("You won!")
-            console.log("Player won");
+            
+            const result = {
+                playerWon: true,
+                guessesCount: guessedProvinces.length 
+            }
+
+            showResult(challenge, result);
         }
 
-        if(guessedProvinces.length > 20) {
+        if(guessedProvinces.length + 1 > 2) {
             toast("You lose...")
+
+            const result = {
+                playerWon: false,
+            }
+
+            showResult(challenge, result);
         }
     };
 

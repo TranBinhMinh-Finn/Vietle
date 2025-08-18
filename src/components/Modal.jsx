@@ -1,6 +1,6 @@
 import {X} from 'lucide-react'
 
-const Modal = ({title, children, onClose, isOpen = false}) => {
+const Modal = ({title, children, onClose, isOpen = false, className = ""}) => {
     
     if(!isOpen) return null;
 
@@ -11,7 +11,7 @@ const Modal = ({title, children, onClose, isOpen = false}) => {
                 onClick={onClose}
             />
 
-            <div className="relative bg-[#181a1b] rounded-lg shadow-2xl max-w-md w-full mx-4">
+            <div className={`relative bg-[#181a1b] rounded-lg shadow-2xl max-w-lg w-full mx-4 ${className}`}>
                 <div className="flex items-center justify-between p-6 border-b border-[#3b4043]">
                 <h2 className="text-xl font-bold text-white">{title}</h2>
                     <button
