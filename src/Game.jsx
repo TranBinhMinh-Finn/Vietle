@@ -140,8 +140,6 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
             parent: {},
             maxRank: 0,
             guessedProvinces: [],
-            completed: false,
-            playerWon: false,
         }; 
     }
 
@@ -162,18 +160,29 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
         rank.current = progress.rank;
         parent.current = progress.parent;
         maxRank.current = progress.maxRank;
-        setCompleted(progress.completed);
+
+        if(findSet(newChallenge.endId) == newChallenge.startId) {
+            const result = {
+                playerWon: true,
+                guessesCount: savedGuessedProvinces.length
+            }
+            setCompleted(true);
+            showResult(newChallenge, result);
+        }
+
+        if(savedGuessedProvinces >= newChallenge.guessLimit) {
+            const result = {
+                playerWon: false,
+            }
+            setCompleted(true);
+            showResult(newChallenge, result);
+        }
+        
+        setCompleted(false);
+
         if(maxRank.current == 0) {
             makeSet(newChallenge.startId);
             makeSet(newChallenge.endId);
-        }
-
-        if(progress.completed) {
-            const result = {
-                playerWon: progress.playerWon,
-                guessesCount: savedGuessedProvinces.length
-            }
-            showResult(newChallenge, result)
         }
     }
 
@@ -287,9 +296,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
             rank: rank.current,
             parent: parent.current,
             maxRank: maxRank.current,
-            guessedProvinces: [...guessedProvinces, guessedProvince],
-            completed: completed,
-            playerWon: playerWon,
+            guessedProvinces: [...guessedProvinces, guessedProvince]
         }; 
 
         setCompleted(completed);
