@@ -116,13 +116,12 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
                     style: 'assets/style.json',
                     zoom: 5.2,
                     attributionControl: false,
+                    interactive: false
                     });
                 mapRef.current.on('load', () => addProvinceLayer());
                 mapRef.current.on('click', () => addProvinceAnnotations());
                 mapRef.current.on('load', () => markMapReady());
-
-                mapRef.current.dragPan.disable();
-                mapRef.current.scrollZoom.disable();
+                
                 mapRef.current.on('load', () => fitToBbox());
                 mapRef.current.on('resize', () => {
                     setTimeout(() => {
