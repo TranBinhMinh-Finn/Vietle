@@ -3,6 +3,7 @@ import GameMap from "./GameMap";
 import {loadProvinceData, getProvinceNameById, getProvinceIdByName, GameModes, getTodaysSeed, RNG} from "./utils";
 import AutoSuggestInput from "./components/AutoSuggestInput";
 import { useToast } from "./components/Toast";
+import { LoaderCircle } from "lucide-react";
 
 const Game = ({gameMode = GameModes.DAILY, showResult}) => {
     const toast = useToast();
@@ -89,7 +90,6 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
                 const response = await fetch('/assets/gis/merged/merged_adjacency.json');
                 adjacencyData = await response.json(); 
                 setAdjacencyData(adjacencyData);
-
                 setIsLoading(false);
             } catch (err) {
                 console.error('Failed to load data:', err);
@@ -97,6 +97,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
         }
         
         loadData();
+        
     }, []);
 
     useEffect(() => {
@@ -297,85 +298,86 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
 
     return (
         <div id="main-game" className="box-border flex flex-col md:flex-row w-full h-screen pt-10 content-center">
-            <div className="w-full flex content-center md:max-w-[55vw] md:justify-center pt-10 p-4 md:pl-30 md:grow">
-            {
-                loading ? null : <>
+        {
+            loading ? 
+            <div className="flex self-center items-center mx-auto my-auto">
+                <LoaderCircle size={48} className="text-white animate-spin"/> 
+                <div className="ml-2 font-medium"></div>Đang tải...
+            </div>
+            : 
+            <>
+                <div className="w-full flex content-center md:max-w-[55vw] md:justify-center pt-10 p-4 md:pl-30 md:grow">
                     <GameMap 
                         ref={gameMapRef}
                         provinces = {provinces}
                         markMapReady={markMapReady}
                         
                     />
-                </>
+                </div>
+            
+                <div className="md:w-[50vw] md:mr-5 md:mt-30 md:grow">
+                    <div className="w-full md:max-w-2xl md:mr-auto md:my-6 flex flex-col gap-2 p-4">
+                    {
+                        challenge ? 
+                        <h3 className="text-left">Kết nối <strong style={{color: '#61bd6c'}}>{challenge.startName}
+                            </strong> đến <strong style={{color: '#e05c56'}}>{challenge.endName}</strong>
+                        </h3>
+                        : null
+                    }   
+                    </div>
                 
-            }
-            </div>
-            
-            <div className="md:w-[50vw] md:mr-5 md:mt-30 md:grow">
-                <div className="w-full md:max-w-2xl md:mr-auto md:my-6 flex flex-col gap-2 p-4">
-                {
-                    challenge ? 
-                    <h3 className="text-left">Kết nối <strong style={{color: '#61bd6c'}}>{challenge.startName}
-                        </strong> đến <strong style={{color: '#e05c56'}}>{challenge.endName}</strong>
-                    </h3>
-                    : null
-                }   
-                </div>
-            
-                <div className="flex flex-col w-full md:py-6 md:max-w-lg">
-                    <div className="w-full max-w-7xl mx-auto px-4 md:mt-8 mb-2 flex flex-col gap-2
-                    rounded-lg p-4">
-                        <div className="block text-sm font-medium">
-                            Nhập tên tỉnh
-                        </div>
-                        {
-                            loading ? null :
-                            <AutoSuggestInput
-                                provinceNames={provinces.map(province => province.name)}
-                                handleSubmit={handleGuess}
+                    <div className="flex flex-col w-full md:py-6 md:max-w-lg">
+                        <div className="w-full max-w-7xl mx-auto px-4 md:mt-8 mb-2 flex flex-col gap-2
+                        rounded-lg p-4">
+                            <div className="block text-sm font-medium">
+                                Nhập tên tỉnh
+                            </div>
+                                <AutoSuggestInput
+                                    provinceNames={provinces.map(province => province.name)}
+                                    handleSubmit={handleGuess}
+                                    disabled={completed}
+                                />
+                            <button 
+                                className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
+                                onClick={handleGuess}
                                 disabled={completed}
-                            />
-                        }
-                        <button 
-                            className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
-                            onClick={handleGuess}
-                            disabled={completed}
-                            >Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}
+                                >Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}
+                                
+                            </button>
+                            {
+                                gameMode == GameModes.PRACTICE ? (
+                                    <button
+                                        className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
+                                        onClick={handleNewChallenge}
+                                    >
+                                        Thử thách mới
+                                    </button>
+                                ) : null
+                            }
                             
-                        </button>
-                        {
-                            gameMode == GameModes.PRACTICE ? (
-                                <button
-                                    className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
-                                    onClick={handleNewChallenge}
-                                >
-                                    Thử thách mới
-                                </button>
-                            ) : null
-                        }
-                        
+                        </div>
+                
+                        <div className="w-full max-w-full mx-auto px-4 mt-2 flex flex-col rounded-lg">
+                            <label className="block text-sm font-medium mb-2">
+                                Các tỉnh đã đoán:
+                            </label>
+                            <ol className="flex flex-wrap gap-1">
+                            {
+                                guessedProvinces.map((province, index) => 
+                                    <li key={getProvinceIdByName(province)}
+                                        className="bg-[#3b4043] px-3 py-2 rounded-full text-sm font-medium"
+                                    >
+                                        {index+1}. {province}</li>
+                                )
+                            }
+                            </ol>
+                            
+                        </div>
                     </div>
-            
-                    <div className="w-full max-w-full mx-auto px-4 mt-2 flex flex-col rounded-lg">
-                        <label className="block text-sm font-medium mb-2">
-                            Các tỉnh đã đoán:
-                        </label>
-                        <ol className="flex flex-wrap gap-1">
-                        {
-                            guessedProvinces.map((province, index) => 
-                                <li key={getProvinceIdByName(province)}
-                                    className="bg-[#3b4043] px-3 py-2 rounded-full text-sm font-medium"
-                                >
-                                    {index+1}. {province}</li>
-                            )
-                        }
-                        </ol>
-                        
-                    </div>
-                </div>
 
-            </div>
-            
+                </div>
+            </>
+            }
         </div>
     )
 }
