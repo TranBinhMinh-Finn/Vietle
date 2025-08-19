@@ -44,7 +44,7 @@ export const ToastProvider = ({ children }) => {
             <span className="flex-1">{t.message}</span>
             <button
               onClick={() => removeToast(t.id)}
-              className="text-white hover:text-gray-300 transition-colors flex-shrink-0 p-1 -m-1"
+              className="text-white hover:text-gray-300 flex-shrink-0 p-1 -m-1"
               aria-label="Close notification"
             ><X size={14} /></button>
           </div>

@@ -338,7 +338,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
                                     disabled={completed}
                                 />
                             <button 
-                                className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
+                                className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed"
                                 onClick={handleGuess}
                                 disabled={completed}
                                 >Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}
@@ -347,7 +347,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
                             {
                                 gameMode == GameModes.PRACTICE ? (
                                     <button
-                                        className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
+                                        className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed"
                                         onClick={handleNewChallenge}
                                     >
                                         Thử thách mới
