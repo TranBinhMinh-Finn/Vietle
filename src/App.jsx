@@ -5,6 +5,8 @@ import Header from "./components/Header";
 import { useState } from "react";
 import HelpModal from "./components/HelpModal";
 import GameResultModal from "./components/GameResultModal";
+import { GameModes } from "./utils";
+import ModeSelectModal from "./components/ModeSelectModal";
 
 const App = () => {
 
@@ -12,33 +14,57 @@ const App = () => {
     const [challenge, setChallenge] = useState(null);
     const [result, setResult] = useState(null);
     const [showResult, setShowResult] = useState(false);
+    const [gameMode, setGameMode] = useState(GameModes.DAILY);
+    const [showModeSelect, setShowModeSelect] = useState(false);
 
     const showGameResult = (challenge, result) => {
       setChallenge(challenge);
       setResult(result);
       setShowResult(true);
     }
+
+    const showGameModeModal = () => {
+      /*
+      var newGameMode;
+      if(gameMode == GameModes.DAILY)
+        newGameMode = GameModes.PRACTICE;
+      else
+        newGameMode = GameModes.DAILY;
+      setGameMode(newGameMode);*/
+    }
+
     return (
       <>
+        <Header
+            showHelpModal={()=> setShowHelp(true)}
+            showGameModeModal={() => setShowModeSelect(true)}
+            gameMode={gameMode}
+        />
+
         <HelpModal
             isOpen={showHelp}
             onClose={() => setShowHelp(false)}
           />
-        <ToastProvider>
-
+        
+        <ModeSelectModal
+          isOpen={showModeSelect}
+          onClose={() => setShowModeSelect(false)}
+          setGameMode={setGameMode}
+          currentGameMode={gameMode}
+        />
         <GameResultModal
             isOpen={showResult}
             onClose={() => setShowResult(false)}
             challenge={challenge}
             result={result}
         />
-          
-          <Header
-            showHelpModal={()=> setShowHelp(true)}
-          />
+
+        <ToastProvider>
           <div className="box-border bg-[#181a1b]
                     max-w-full h-screen flex flex-col">
-          <Game showResult={showGameResult}/>
+          <Game 
+            gameMode={gameMode}
+            showResult={showGameResult}/>
           </div>
         </ToastProvider>
       </>

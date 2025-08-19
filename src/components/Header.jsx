@@ -1,6 +1,16 @@
-import { CircleQuestionMark } from "lucide-react";
+import { CircleQuestionMark, Calendar, Dumbbell, ChevronsUpDown} from "lucide-react";
+import { GameModes } from "../utils";
 
-const Header = ({showHelpModal}) => {
+
+const Header = ({gameMode, showGameModeModal, showHelpModal}) => {
+
+  const getModeLabel = () => {
+    return gameMode == GameModes.DAILY ? "Thử thách hàng ngày" : "Luyện tập";
+  }
+
+  const getModeIcon = () => {
+    return gameMode == GameModes.DAILY ? (<Calendar size={12}/>) : (<Dumbbell size={12}/>);
+  }
 
     return (
         <header className="sticky top-0 z-50 border-b-1 border-[#3b4043] bg-[#191a1a] flex justify-between">
@@ -9,6 +19,16 @@ const Header = ({showHelpModal}) => {
             <div className="flex items-center space-x-3">
               <span className="text-2xl font-bold">Vietle</span>
             </div>
+            <button 
+              onClick={() => showGameModeModal()}
+              className="flex justify-between bg-[#141516] border-[#3b4043] border-2
+              mx-4 px-3 py-2 text-sm font-medium items-center rounded-md w-54"> 
+              <div className="flex justify-center items-center gap-2">
+                {getModeIcon()}
+                {getModeLabel()}
+              </div>
+              <ChevronsUpDown className="mr-2 ml-auto" size={15}/>
+            </button>
           </div>
         </div>
 

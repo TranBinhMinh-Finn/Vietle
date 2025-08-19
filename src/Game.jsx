@@ -1,24 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import GameMap from "./GameMap";
 import adjacencyData from './assets/gis/merged/merged_adjacency.json';
-import {loadProvinceData, getProvinceNameById, getProvinceIdByName} from "./utils";
+import {loadProvinceData, getProvinceNameById, getProvinceIdByName, GameModes, getTodaysSeed, RNG} from "./utils";
 import AutoSuggestInput from "./components/AutoSuggestInput";
 import { useToast } from "./components/Toast";
 
-const Game = ({showResult}) => {
+const Game = ({gameMode = GameModes.DAILY, showResult}) => {
     const toast = useToast();
     const [provinces, setProvinces] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [challenge, setChallenge] = useState(null);
     const [mapReady, setMapReady] = useState(false);
+    const [completed, setCompleted] = useState(false);
+    const [playerWon, setPlayerWon] = useState(false);
     
     const [guessedProvinces, setGuessedProvinces] = useState([]);
+    
     const gameMapRef = useRef(null);
     let parent = useRef({});
     let rank = useRef({})
     const maxRank = useRef(0);
+    const todaysSeed = getTodaysSeed();
 
-    const getRandomEndProvinceAndPath = (startId, min_distance = 3) => {
+    const getRandomEndProvinceAndPath = (startId, seed = null, min_distance = 3) => {
         let queue = [startId];
         const visited = new Set([startId]);
         const traceBack = {};
@@ -44,7 +48,7 @@ const Game = ({showResult}) => {
             }
         }
 
-        const endId = potentialEndIds[Math.floor(Math.random() * potentialEndIds.length)];
+        const endId = potentialEndIds[Math.floor((seed ? RNG(seed * 37 + 1) : Math.random()) * potentialEndIds.length)];
 
         let path = [endId];
         let currentId = endId;
@@ -55,15 +59,15 @@ const Game = ({showResult}) => {
         return [endId, path];
     }
 
-    const generateNewChallenge = () => {
+    const generateNewChallenge = (seed = null) => {
         const provinceIds = Object.keys(adjacencyData);
 
-        const startId = provinceIds[Math.floor(Math.random() * provinceIds.length)];
-        const [endId, pathInId] = getRandomEndProvinceAndPath(startId);
+        const startId = provinceIds[Math.floor((seed ? RNG(seed) : Math.random()) * provinceIds.length)];
+        const [endId, pathInId] = getRandomEndProvinceAndPath(startId, seed);
         
         const optimalPath = pathInId.map((provinceId) => getProvinceNameById(provinceId));
         const guessLimit = Math.max(Math.round((optimalPath.length - 2) * 1.3), optimalPath.length + 1);
-
+        
         const challenge = {
             startId: startId,
             endId: endId,
@@ -93,21 +97,93 @@ const Game = ({showResult}) => {
     }, []);
 
     useEffect(() => {
-        if(mapReady)
-            handleNewChallenge();
+        if(mapReady) {
+            if(gameMode == GameModes.PRACTICE)
+                handleNewChallenge();
+            else {
+                prepareDailyChallenge();
+            }
+        }
+            
     }, [mapReady]);
+
+    useEffect(() => {
+        if(!mapReady)
+            return;
+        if(gameMode == GameModes.PRACTICE)
+            handleNewChallenge();
+        else {
+            prepareDailyChallenge();
+        }
+    }, [gameMode]);
 
     const markMapReady = () => {
         setMapReady(true);
     };
 
+    const STORAGE_KEY = 'daily-challenge-progress';
+
+    const saveProgress = (progress, seed = todaysSeed) => {
+        const allProgress = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        allProgress[seed] = progress;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allProgress));
+    }
+    
+    const loadProgress = (seed = todaysSeed) => {
+        const allProgress = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        return allProgress[seed] || {
+            rank: {},
+            parent: {},
+            maxRank: 0,
+            guessedProvinces: [],
+            completed: false,
+            playerWon: false,
+        }; 
+    }
+
+    const prepareDailyChallenge = () => {
+        
+        const newChallenge = generateNewChallenge(todaysSeed);
+        const progress = loadProgress(todaysSeed);
+        // console.log(progress);
+        gameMapRef.current.renderChallenge(newChallenge);
+        
+        setChallenge(newChallenge);
+        const savedGuessedProvinces = progress.guessedProvinces;
+        setGuessedProvinces(savedGuessedProvinces);
+        savedGuessedProvinces.forEach(p => {
+            gameMapRef.current.highlightProvince(p);
+        })
+
+        rank.current = progress.rank;
+        parent.current = progress.parent;
+        maxRank.current = progress.maxRank;
+        if(maxRank.current == 0) {
+            makeSet(newChallenge.startId);
+            makeSet(newChallenge.endId);
+        }
+
+        if(progress.completed) {
+            const result = {
+                playerWon: progress.playerWon,
+                guessesCount: savedGuessedProvinces.length
+            }
+            showResult(newChallenge, result)
+        }
+    }
+
     const handleNewChallenge = () => {
         const newChallenge = generateNewChallenge();
         gameMapRef.current.renderChallenge(newChallenge);
-        makeSet(newChallenge.startId);
-        makeSet(newChallenge.endId);
+
         setChallenge(newChallenge);
         setGuessedProvinces([]);
+        rank.current = {};
+        parent.current = {};
+        maxRank.current = 0;
+        makeSet(newChallenge.startId);
+        makeSet(newChallenge.endId);
+        
     };
 
     const uniteSet = (nodeA, nodeB) => {
@@ -115,13 +191,13 @@ const Game = ({showResult}) => {
         var b = findSet(nodeB);
         
         if(a != b) {
-            if (rank[a] > rank[b]) {
+            if (rank.current[a] > rank.current[b]) {
                 parent.current[a] = b;
-                rank[a] = rank[b];
+                rank.current[a] = rank.current[b];
             }
             else {
                 parent.current[b] = a;
-                rank[b] = rank[a];
+                rank.current[b] = rank.current[a];
             }
             
         }
@@ -139,8 +215,8 @@ const Game = ({showResult}) => {
     const makeSet = (node) => {
         maxRank.current = maxRank.current * 1 + 1;
         parent.current[node] = node;
-        rank[node] = maxRank.current;
-        // console.log(node, rank[node]);
+        rank.current[node] = maxRank.current;
+        // console.log(node, rank.current[node]);
     }
 
     const handleGuess = () => {
@@ -166,8 +242,6 @@ const Game = ({showResult}) => {
             return;
         }
 
-        
-
         setGuessedProvinces(prev => [...prev, guessedProvince]);
         gameMapRef.current.highlightProvince(guessedProvince);
 
@@ -183,22 +257,37 @@ const Game = ({showResult}) => {
             }
         }   
 
+        var completed = false, playerWon = false;
         if(findSet(challenge.endId) == challenge.startId) {
             const result = {
                 playerWon: true,
-                guessesCount: guessedProvinces.length 
+                guessesCount: guessedProvinces.length + 1
             }
-
+            completed = true;
+            playerWon = true;
             showResult(challenge, result);
         }
 
-        if(guessedProvinces.length + 1 > guessLimit) {
+        if(guessedProvinces.length + 1 > challenge.guessLimit) {
             const result = {
                 playerWon: false,
             }
-
+            completed = true;
+            playerWon = false;
             showResult(challenge, result);
         }
+        
+        const progress = {
+            rank: rank.current,
+            parent: parent.current,
+            maxRank: maxRank.current,
+            guessedProvinces: [...guessedProvinces, guessedProvince],
+            completed: completed,
+            playerWon: playerWon,
+        }; 
+
+        
+        saveProgress(progress)
     };
 
     return (
@@ -240,7 +329,19 @@ const Game = ({showResult}) => {
                         />
                         <button 
                             className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
-                            onClick={handleGuess}>Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}</button>
+                            onClick={handleGuess}>Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}
+                        </button>
+                        {
+                            gameMode == GameModes.PRACTICE ? (
+                                <button
+                                    className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
+                                    onClick={handleNewChallenge}
+                                >
+                                    Thử thách mới
+                                </button>
+                            ) : null
+                        }
+                        
                     </div>
             
                     <div className="w-full max-w-full mx-auto px-4 mt-2 flex flex-col rounded-lg">

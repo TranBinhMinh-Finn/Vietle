@@ -1,3 +1,4 @@
+import { format } from 'maplibre-gl';
 import provinceIdMapping from './assets/gis/merged/id_mapping.json';
 
 export const getProvinceNameById = (id) => {
@@ -45,3 +46,37 @@ export const loadProvinceDataWithRetry = async (maxRetries = 3) => {
     }
   }
 };
+
+export const GameModes = {
+  DAILY: 0,
+  PRACTICE: 1
+}
+
+export const getDateInTimezone = (timezone = 'Asia/Ho_Chi_Minh') => {
+  const today = new Date();
+  const options = {
+    timezone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'long'
+  };
+  const formatter = new Intl.DateTimeFormat('vi-VN', options);
+  return formatter.format(today);
+} 
+
+export const getTodaysSeed = (timezone = 'Asia/Ho_Chi_Minh') => {
+  const today = new Date();
+  const options = { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' };
+  const formatter = Intl.DateTimeFormat('vi-VN', options);
+  const dateInTimezone = formatter.format(today);
+  const dateString = dateInTimezone.replace(/\//g, '');
+  return parseInt(dateString);
+}
+
+export const RNG = (seed) => {
+  var m = 2**35 - 31;
+  var a = 185852;
+  var s = seed % m;
+  return (s * a % m) / m;
+}
