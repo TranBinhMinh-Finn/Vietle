@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}}) => {
+const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled=false}) => {
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState([false]);
     const [activeSuggestion, setActiveSuggestion] = useState(-1);
     const [isFocused, setIsFocused] = useState(false);
     const [isSelectionLocked, setIsSelectionLocked] = useState(false);
+    
 
     const inputRef = useRef(null);
     const suggestionRefs = useRef([]); 
@@ -143,11 +144,13 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}}) => {
                 onKeyDown={handleKeyDown}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                disabled={disabled}
                 className="px-3 py-2 
                     border border-[#3b4043] rounded-md 
                     focus:outline-none focus:ring-2 
                     text-sm w-full"
                     autoComplete="off"
+                
             />
             {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-3 bg-[#181a1b] 

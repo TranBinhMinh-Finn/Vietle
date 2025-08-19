@@ -12,7 +12,6 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
     const [challenge, setChallenge] = useState(null);
     const [mapReady, setMapReady] = useState(false);
     const [completed, setCompleted] = useState(false);
-    const [playerWon, setPlayerWon] = useState(false);
     
     const [guessedProvinces, setGuessedProvinces] = useState([]);
     
@@ -158,6 +157,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
         rank.current = progress.rank;
         parent.current = progress.parent;
         maxRank.current = progress.maxRank;
+        setCompleted(progress.completed);
         if(maxRank.current == 0) {
             makeSet(newChallenge.startId);
             makeSet(newChallenge.endId);
@@ -181,6 +181,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
         rank.current = {};
         parent.current = {};
         maxRank.current = 0;
+        setCompleted(false);
         makeSet(newChallenge.startId);
         makeSet(newChallenge.endId);
         
@@ -286,7 +287,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
             playerWon: playerWon,
         }; 
 
-        
+        setCompleted(completed);
         saveProgress(progress)
     };
 
@@ -326,10 +327,14 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
                         <AutoSuggestInput
                             provinceNames={provinces.map(province => province.name)}
                             handleSubmit={handleGuess}
+                            disabled={completed}
                         />
                         <button 
                             className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
-                            onClick={handleGuess}>Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}
+                            onClick={handleGuess}
+                            disabled={completed}
+                            >Đoán {challenge ? `(${guessedProvinces.length}/${challenge?.guessLimit})` : null}
+                            
                         </button>
                         {
                             gameMode == GameModes.PRACTICE ? (
