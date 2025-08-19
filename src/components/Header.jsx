@@ -35,7 +35,7 @@ const Header = ({gameMode, showGameModeModal, showHelpModal}) => {
         <div className="px-4 flex items-center">
           <button
               onClick={() => {showHelpModal()}}
-              className="text-white hover:text-gray-300 transition-colors flex-shrink-0 p-1 -m-1"
+              className="text-white hover:text-gray-300 flex-shrink-0 p-1 -m-1"
               aria-label="Close notification"
             ><CircleQuestionMark size={20} /></button>
         </div>
