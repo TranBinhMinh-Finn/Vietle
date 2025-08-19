@@ -113,7 +113,7 @@ const GameMap = ({provinces = [], markMapReady, ref}) => {
             if (!mapRef.current) {
                 mapRef.current = new maplibregl.Map({
                     container: mapContainer.current,
-                    style: './src/assets/style.json',
+                    style: 'assets/style.json',
                     zoom: 5.2,
                     attributionControl: false,
                     });

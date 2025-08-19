@@ -1,5 +1,7 @@
 import { format } from 'maplibre-gl';
-import provinceIdMapping from './assets/gis/merged/id_mapping.json';
+
+const response = await fetch('/assets/gis/merged/id_mapping.json');
+const provinceIdMapping = await response.json();
 
 export const getProvinceNameById = (id) => {
   return provinceIdMapping[id];
@@ -21,8 +23,9 @@ export const loadProvinceData = async () => {
   
   for (let i = 1; i <= totalFiles; i++) {
     try {
-      const jsonData = await import(`./assets/gis/merged/${i}.json`);
-      allData.push(jsonData.default);
+      const response = await fetch(`/assets/gis/merged/${i}.json`);
+      const jsonData = await response.json();
+      allData.push(jsonData);
 
     } catch (error) {
       console.error(`Error loading ${i}.json`, error);

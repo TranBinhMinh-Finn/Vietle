@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import GameMap from "./GameMap";
-import adjacencyData from './assets/gis/merged/merged_adjacency.json';
 import {loadProvinceData, getProvinceNameById, getProvinceIdByName, GameModes, getTodaysSeed, RNG} from "./utils";
 import AutoSuggestInput from "./components/AutoSuggestInput";
 import { useToast } from "./components/Toast";
@@ -12,12 +11,13 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
     const [challenge, setChallenge] = useState(null);
     const [mapReady, setMapReady] = useState(false);
     const [completed, setCompleted] = useState(false);
+    const [adjacencyData, setAdjacencyData] = useState({});
     
     const [guessedProvinces, setGuessedProvinces] = useState([]);
     
     const gameMapRef = useRef(null);
-    let parent = useRef({});
-    let rank = useRef({})
+    const parent = useRef({});
+    const rank = useRef({})
     const maxRank = useRef(0);
     const todaysSeed = getTodaysSeed();
 
@@ -81,15 +81,19 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
 
     useEffect(() => {
         const loadData = async () => {
-            var provinceData;
+            var provinceData, adjacencyData;
             try {
                 provinceData = await loadProvinceData();
                 setProvinces(provinceData);
+                
+                const response = await fetch('/assets/gis/merged/merged_adjacency.json');
+                adjacencyData = await response.json(); 
+                setAdjacencyData(adjacencyData);
+
                 setIsLoading(false);
             } catch (err) {
                 console.error('Failed to load data:', err);
             }
-            return provinceData;
         }
         
         loadData();
@@ -324,11 +328,14 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
                         <div className="block text-sm font-medium">
                             Nhập tên tỉnh
                         </div>
-                        <AutoSuggestInput
-                            provinceNames={provinces.map(province => province.name)}
-                            handleSubmit={handleGuess}
-                            disabled={completed}
-                        />
+                        {
+                            loading ? null :
+                            <AutoSuggestInput
+                                provinceNames={provinces.map(province => province.name)}
+                                handleSubmit={handleGuess}
+                                disabled={completed}
+                            />
+                        }
                         <button 
                             className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed transition-colors"
                             onClick={handleGuess}
