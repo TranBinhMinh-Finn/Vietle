@@ -8,9 +8,16 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
     const [isFocused, setIsFocused] = useState(false);
     const [isSelectionLocked, setIsSelectionLocked] = useState(false);
     
-
     const inputRef = useRef(null);
     const suggestionRefs = useRef([]); 
+
+    const removeAccents = (str) => {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove combining diacritical marks
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    };
 
     useEffect(() => {
         if (isSelectionLocked) {
@@ -26,9 +33,11 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
         }
 
         const filtered = provinceNames
-            .filter(item => 
-                item.toLowerCase().includes(query.toLowerCase())
-            )
+            .filter(item => {
+              const normalizedItem = removeAccents(item.toLowerCase());
+              const normalizedQuery = removeAccents(query.toLowerCase());
+              return normalizedItem.includes(normalizedQuery);
+            })
 
         setSuggestions(filtered);
         setShowSuggestions(filtered.length > 0);
@@ -51,7 +60,6 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
     const handleKeyDown = (e) => {
     
     if(e.key == 'Enter' && activeSuggestion < 0) {
-        console.log('entered');
         handleSubmit();
         return;
     }
@@ -62,7 +70,7 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
       case 'ArrowDown':
         e.preventDefault();
         setActiveSuggestion(prev => {
-          const newIndex = prev < suggestions.length - 1 ? prev + 1 : prev;
+          const newIndex = prev < suggestions.length - 1 ? prev + 1 : 0;
           setTimeout(() => {
             if (suggestionRefs.current[newIndex]) {
               suggestionRefs.current[newIndex].scrollIntoView({
@@ -78,7 +86,7 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
       case 'ArrowUp':
         e.preventDefault();
         setActiveSuggestion(prev => {
-          const newIndex = prev > 0 ? prev - 1 : -1;
+          const newIndex = prev > 0 ? prev - 1 : suggestions.length - 1;
           setTimeout(() => {
             if (newIndex >= 0 && suggestionRefs.current[newIndex]) {
               suggestionRefs.current[newIndex].scrollIntoView({
@@ -93,12 +101,9 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
 
       case 'Enter':
         e.preventDefault();
-        if (activeSuggestion >= 0) {
+        if (activeSuggestion >= 0)
           handleSuggestionClick(suggestions[activeSuggestion]);
-        } else {
-            console.log('entered');
-            handleSubmit();
-        }
+
         break;
       case 'Escape':
         setShowSuggestions(false);
@@ -119,21 +124,34 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
     };
 
     const highlightMatch = (text, query) => {
-        if (!query) return text;
+      if (!query) return text;
         
-        const regex = new RegExp(`(${query})`, 'gi');
-        const parts = text.split(regex);
-        
-        return parts.map((part, index) => 
-        regex.test(part) ? (
+      const normalizedQuery = removeAccents(query.toLowerCase());
+      const regex = new RegExp(`(${normalizedQuery})`, 'gi');
+      const normalizedText = removeAccents(text.toLowerCase());
+      const parts = normalizedText.split(regex);
+      const accentedParts = [];
+      let currentIndex = 0;
+      for (const part of parts) {
+        const accentedPart = text.slice(currentIndex, currentIndex + part.length);
+        accentedParts.push(accentedPart);
+        currentIndex += part.length;
+      }
+      return parts.map((part, index) => {
+        if (part.includes(normalizedQuery) && normalizedQuery.length > 0) {
+          return (
             <span key={index} className="bg-amber-800 text-amber-100 font-medium">
-            {part}
-            </span>
-        ) : (
-            part
-        )
-        );
+                {accentedParts[index]}
+              </span>
+          );
+        }
+        else {
+          return accentedParts[index];
+        }
+          
+      });
     };
+
     return (
         <div className="relative">
             <input 
@@ -153,9 +171,9 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
                 
             />
             {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-3 bg-[#181a1b] 
+                <div className="absolute bottom-full left-0 right-0 mt-3 bg-[#181a1b] 
                 rounded-lg shadow-lg border border-gray-100 overflow-hidden 
-                z-50 animate-in slide-in-from-top-2 duration-200">
+                z-50 animate-in slide-in-from-bottom-2 duration-200">
                     <div className="max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     {suggestions.map((suggestion, index) => (
                         <div
