@@ -13,6 +13,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
     const [mapReady, setMapReady] = useState(false);
     const [completed, setCompleted] = useState(false);
     const [adjacencyData, setAdjacencyData] = useState({});
+    const [guess, setGuess] = useState('');
     
     const [guessedProvinces, setGuessedProvinces] = useState([]);
     
@@ -236,7 +237,10 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
         // console.log(node, rank.current[node]);
     }
 
-    const handleGuess = (guessedProvince) => {
+    const handleGuess = () => {
+        const guessedProvince = guess.trim();
+        setGuess('');
+
         const province = provinces.find(p => 
           p.name === guessedProvince
         );
@@ -342,6 +346,8 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
                                     provinceNames={provinces.map(province => province.name)}
                                     handleSubmit={handleGuess}
                                     disabled={completed}
+                                    query={guess}
+                                    setQuery={setGuess}
                                 />
                             <button 
                                 className="bg-[#141516] text-white px-4 py-2 rounded-md text-sm font-medium disabled:cursor-not-allowed"

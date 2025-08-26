@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled=false}) => {
-    const [query, setQuery] = useState('');
+const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled=false, query, setQuery}) => {
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState([false]);
     const [activeSuggestion, setActiveSuggestion] = useState(-1);
@@ -60,9 +59,7 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
     const handleKeyDown = (e) => {
     
     if(e.key == 'Enter' && activeSuggestion < 0) {
-        
-        handleSubmit(query);
-        setQuery('');
+        handleSubmit();
         return;
     }
     if (!showSuggestions) {
