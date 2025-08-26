@@ -168,6 +168,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
             }
             setCompleted(true);
             showResult(newChallenge, result);
+            return;
         }
 
         if(savedGuessedProvinces >= newChallenge.guessLimit) {
@@ -176,6 +177,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
             }
             setCompleted(true);
             showResult(newChallenge, result);
+            return;
         }
         
         setCompleted(false);
@@ -234,10 +236,7 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
         // console.log(node, rank.current[node]);
     }
 
-    const handleGuess = () => {
-        const guessInput = document.getElementById('guess');
-        const guessedProvince = guessInput.value.trim();
-
+    const handleGuess = (guessedProvince) => {
         const province = provinces.find(p => 
           p.name === guessedProvince
         );
