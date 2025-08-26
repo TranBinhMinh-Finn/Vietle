@@ -60,7 +60,9 @@ const AutoSuggestInput = ({provinceNames = [], handleSubmit = () => {}, disabled
     const handleKeyDown = (e) => {
     
     if(e.key == 'Enter' && activeSuggestion < 0) {
-        handleSubmit();
+        
+        handleSubmit(query);
+        setQuery('');
         return;
     }
     if (!showSuggestions) {
