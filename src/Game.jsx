@@ -294,16 +294,18 @@ const Game = ({gameMode = GameModes.DAILY, showResult}) => {
             playerWon = false;
             showResult(challenge, result);
         }
-        
-        const progress = {
-            rank: rank.current,
-            parent: parent.current,
-            maxRank: maxRank.current,
-            guessedProvinces: [...guessedProvinces, guessedProvince]
-        }; 
 
         setCompleted(completed);
-        saveProgress(progress)
+        if(gameMode = GameModes.DAILY) {
+                const progress = {
+                rank: rank.current,
+                parent: parent.current,
+                maxRank: maxRank.current,
+                guessedProvinces: [...guessedProvinces, guessedProvince]
+            }; 
+            saveProgress(progress);
+        }
+            
     };
 
     return (
